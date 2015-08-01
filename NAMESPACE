@@ -1,0 +1,47 @@
+### Compile the C code and load it automatically in R when loading the lib
+
+useDynLib(Pasha, .registration = TRUE)
+
+
+### Imports
+
+
+# Bioconductor
+
+import(IRanges)
+import(GenomicAlignments)
+import(Biostrings)
+import(GenomicRanges)
+import(Rsamtools)
+import(ShortRead)
+#import(GenomeInfoDb)
+
+
+# General
+
+importFrom(parallel, mclapply, mcmapply)
+importFrom(bitops, bitAnd)
+importFrom(tools, md5sum) # for functional tests
+import(methods)
+import(gtools) # mixedorder
+import(S4Vectors) # Rle, metadata, metadata<-, runValue, runLength
+
+
+# suggested by CRAN
+
+importFrom("grDevices", "cairo_ps", "col2rgb", "dev.off", "pdf",
+              "rainbow", "rgb", "svg")
+importFrom("graphics", "abline", "axis", "barplot", "frame", "grid",
+              "layout", "legend", "mtext", "par", "pie", "plot", "points",
+              "polygon", "segments", "text")
+importFrom("stats", "chisq.test", "density", "diffinv")
+importFrom("utils", "packageVersion", "read.table", "untar")
+
+
+
+
+### Exports
+
+# Export all
+exportClassPattern("^.*$")
+exportPattern("^[^\\.C]")

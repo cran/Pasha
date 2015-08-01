@@ -1,0 +1,29 @@
+CHANGES IN VERSION 1.0.0
+-------------------------
+
+PACKAGE FEATURES
+
+    o The Pasha package gives users access to alignedData class
+    and associated methos which help to handle aligned reads from HTS
+    sequencing datasets.
+
+    o The main function of the package (processPipeline) provides an
+    automated pipeline with a bunch of options designed to transform
+    reads to a comprehensive 'score per genomic coordinates' format 
+    (implemented as WIG files fixed or variable step). This process
+    involves the automatic estimation of sequenced fragments length.
+
+    o The pipeline give statistics about users datasets which help to
+    have an idea about data quality and take appropriate decisions for
+    data processing steps.
+
+    o The pipeline provides specific options and behaviour adapted to
+    paired-end aligned reads and gives several innovative options for
+    piling the read scores (midpoint...).
+
+    o Included in the package are some additional functions designed 
+    to help the user dealing with WIG fixed step format (merging
+    files, rescaling, subtracting...)  
+
+    o Please see the manual pages and associated vignette for more
+    detailed information about how to use this resource.
