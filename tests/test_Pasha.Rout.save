@@ -1,5 +1,5 @@
 
-R Under development (unstable) (2015-07-30 r68761) -- "Unsuffered Consequences"
+R Under development (unstable) (2015-10-14 r69514) -- "Unsuffered Consequences"
 Copyright (C) 2015 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -29,25 +29,32 @@ The following objects are masked from 'package:parallel':
     clusterExport, clusterMap, parApply, parCapply, parLapply,
     parLapplyLB, parRapply, parSapply, parSapplyLB
 
-The following object is masked from 'package:stats':
+The following objects are masked from 'package:stats':
 
-    xtabs
+    IQR, mad, xtabs
 
 The following objects are masked from 'package:base':
 
     Filter, Find, Map, Position, Reduce, anyDuplicated, append,
     as.data.frame, as.vector, cbind, colnames, do.call, duplicated,
-    eval, evalq, get, intersect, is.unsorted, lapply, mapply, match,
-    mget, order, paste, pmax, pmax.int, pmin, pmin.int, rank, rbind,
-    rep.int, rownames, sapply, setdiff, sort, table, tapply, union,
-    unique, unlist, unsplit
+    eval, evalq, get, grep, grepl, intersect, is.unsorted, lapply,
+    lengths, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
+    tapply, union, unique, unlist, unsplit
 
 Loading required package: S4Vectors
 Loading required package: stats4
-Creating a generic function for 'nchar' from package 'base' in package 'S4Vectors'
 Loading required package: IRanges
 Loading required package: GenomeInfoDb
 Loading required package: GenomicRanges
+Loading required package: SummarizedExperiment
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
 Loading required package: Biostrings
 Loading required package: XVector
 Loading required package: Rsamtools
@@ -366,4 +373,4 @@ Done, all results seem consistent with reference
 > 
 > proc.time()
    user  system elapsed 
- 21.427   2.581  23.402 
+ 22.660   2.677  24.648 

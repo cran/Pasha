@@ -123,7 +123,7 @@ inline void bcTree::del(int pos, double val) {
 inline void bcTree::showTree() {
   if (n == 0) return;
   for (int i = 0; i < n; i++) 
-    printf("%.6lf\t", sum[i]);
+    printf("%.6f\t", sum[i]);
   printf("\n");
 }
 

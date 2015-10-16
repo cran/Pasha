@@ -445,7 +445,6 @@ getArtefactsIndexes <- function(alignedDataObject, expName, thresholdToUse=1, th
     # Concatenate the thresholds to treat them all at the same time in loops
     thresholds <- as.numeric(unique(na.omit(c(thresholdToUse,thresholdForStats))))
     
-
     # Will receive all the intermediary or final information to be kept along the analysis or to be returned to calling environment
     listResults <- list()
     
@@ -458,11 +457,11 @@ getArtefactsIndexes <- function(alignedDataObject, expName, thresholdToUse=1, th
     skipPlotting <- FALSE
     if(length(strandValues)==2)
     {
-        cairo_ps(filename=file.path(resultFolder, paste(expName, "_pileStats_",currentChr,".ps",sep="")), width=10, height=10, bg="transparent")
+        pdf(file=file.path(resultFolder, paste(expName, "_pileStats_",currentChr,".pdf",sep="")), width=10, height=10)
         layout(matrix(c(1,1,3,3,2,4,2,4,5,5,6,6), ncol=2, byrow=TRUE)) # Create a layout for figures organization
     } else if(length(strandValues)==1)
     {
-        cairo_ps(filename=file.path(resultFolder, paste(expName, "_pileStats_",currentChr,".ps",sep="")), width=10, height=10, bg="transparent")
+        pdf(file=file.path(resultFolder, paste(expName, "_pileStats_",currentChr,".pdf",sep="")), width=10, height=10)
         layout(matrix(c(1:3), ncol=1)) # Create a layout for figures organization
     } else
     {
@@ -1847,7 +1846,7 @@ processPipeline <- function(
             
             colorChart <- rainbow(length(rangesToPlot))
             
-            cairo_ps(filename=file.path(resultFolder, paste(expName, "_size_ranges.ps",sep="")), width=7, height=7, bg="transparent")
+            pdf(file=file.path(resultFolder, paste(expName, "_size_ranges.pdf",sep="")), width=7, height=7)
             .plotDensityRanges(sizeToPlot, ranges=as.list(as.data.frame(rbind(start(rangesToPlot), end(rangesToPlot)))), ranges.col=colorChart, labels.col="black", include.lower=c(TRUE,rep(FALSE,length(rangesToPlot)-1)), include.upper=TRUE, sep.col="darkgrey", sep.lty=2, sep.lwd=0.5, ylab="", xlab=paste("Size of ", if(pairedEnds(alignedDataObject)) "inserts" else "reads", sep=""), main="Ranges of size selection")
             dev.off()
         }
@@ -1891,7 +1890,7 @@ processPipeline <- function(
                     if(length(rangeSelected_alignedDataObject)>100)
                     {
                         # Plot the inserts size disctribution and the selected range
-                        cairo_ps(filename=file.path(reportFilesFolder, paste(expName, "_initial_inserts_size_distribution.ps",sep="")), width=7, height=7, bg="transparent")
+                        pdf(file=file.path(reportFilesFolder, paste(expName, "_initial_inserts_size_distribution.pdf",sep="")), width=7, height=7)
                         .plotDensityRanges(isize(alignedDataObject)[isize(alignedDataObject)>=0], ranges=c(start(currentRange), end(currentRange)), ranges.col="blue", labels.col="black", include.lower=(automaticRanges && (rangeIndex==1)), include.upper=TRUE, sep.col="darkgrey", sep.lty=2, sep.lwd=0.5, main=paste("Inserts size distribution (selection : ",length(rangeSelected_alignedDataObject)," reads)", sep=""), xlab="Inserts size (bp)", ylab="")
                         dev.off()
                     }
@@ -1909,7 +1908,7 @@ processPipeline <- function(
                     if(length(rangeSelected_alignedDataObject)>100)
                     {
                         # Plot the reads size disctribution
-                        cairo_ps(filename=file.path(reportFilesFolder, paste(expName, "_initial_reads_size_distribution.ps",sep="")), width=7, height=7, bg="transparent")
+                        pdf(file=file.path(reportFilesFolder, paste(expName, "_initial_reads_size_distribution.pdf",sep="")), width=7, height=7)
                         .plotDensityRanges(qwidth(alignedDataObject), ranges=c(start(currentRange), end(currentRange)), ranges.col="blue", labels.col="black", include.lower=(automaticRanges && (rangeIndex==1)), include.upper=TRUE, sep.col="darkgrey", sep.lty=2, sep.lwd=0.5, main=paste("Reads size distribution (selection : ",length(rangeSelected_alignedDataObject)," reads)", sep=""), xlab="Reads size (bp)", ylab="")
                         dev.off()
                     }
@@ -1995,6 +1994,12 @@ processPipeline <- function(
             
             # Get the number of reads in the experiment AFTER RANGE SELECTION (used for atefact threshold definition)
             nbReads <- sum(sapply(chrSplit_alignedDataObject, length))
+            
+            # Get the average size of reads on ALL genome
+            # Will be used for multiread pileup as the multiread file format can ommit this information. In this case we will use the average read size computed here from other reads.
+            # (better to have the same for all chromosomes otherwise we might have discrepancies in the elongation size retrieved and not choose the best one, because the choice is based on the most represented one)
+            averageReadSize <- trunc(mean(unlist(lapply(chrSplit_alignedDataObject, qwidth))))
+            cat("\n Average reads size :",averageReadSize)
             
             
             #### REMOVING ARTEFACTS (MORE THAN threshold TAGS WITH SAME COORDINATES)
@@ -2160,9 +2165,9 @@ processPipeline <- function(
                     
                     elongationName <- NULL
                     
-                    # Flag to mark whether the elongation comes from a manual parameter or by estimation (in case estimation is the same as a manual specification)
+                    # Flag to mark whether the elongation comes from a manual parameter or by estimation (in case estimation is the same as a manual specification), used to generate output files name
                     manualElongation <- TRUE
-                    
+                                        
                     if(is.na(currentElongationSize))
                     {
                         manualElongation <- FALSE
@@ -2177,13 +2182,6 @@ processPipeline <- function(
                             #                    }
                             #                    else
                             #                    {
-                            # Get the average size of reads on ALL genome 
-                            # (better to have the same for all chromosomes otherwise we might have discrepancies in the elongation size retrieved and not choose the best one,
-                            # because the choice is based on the most represented one)
-                            
-                            averageReadSize <- trunc(mean(unlist(lapply(chrSplit_noArtefact_alignedDataObject, qwidth))))
-                            cat("\n Average reads size :",averageReadSize)
-                            
                             
                             cat("\n Estimating elongation/shifting size on chromosome : ")
                             
@@ -2247,7 +2245,7 @@ processPipeline <- function(
                                 max.y <- max(sapply(densityInsertSize,"[[", "y"))
                                 max.x <- max(sapply(densityInsertSize,"[[", "x"))
                                 
-                                cairo_ps(filename=file.path(reportFilesFolder, paste(expName, "_insert_size_distribution_by_chromosome",currentElongationSize,".ps",sep="")), width=7, height=7, bg="transparent")    
+                                pdf(file=file.path(reportFilesFolder, paste(expName, "_insert_size_distribution_by_chromosome",currentElongationSize,".pdf",sep="")), width=7, height=7)    
                                 # Set the window
                                 plot(NULL, xlim=c(0,max.x), ylim=c(0,max.y), main=paste(expName, " insertSize distributions (",currentElongationSize,")", sep=""), xlab="Insert size", ylab="")
                                 

@@ -1,4 +1,4 @@
-8754a079a13a88b1fb473c8fd5da934b *DESCRIPTION
+814be67e5c247e2ea6e0e11f4765ccbb *DESCRIPTION
 c795dc8ca6ff2887ab424599ad44a21e *NAMESPACE
 a18429026f52165cdb6fdb05d537d8e2 *NEWS
 df1cd24e40714bbfcf60398ee8661e0d *R/Class_AlignedData.R
@@ -11,7 +11,7 @@ cdb7d46d6276cc866718ec4f2a00197e *R/mergeWigs.R
 869df11366aa15ef930c26934f6b407b *R/multiread_UniformDispatch.R
 6ed6002084e219194214b36ea5e7e438 *R/normAndSubtract.R
 766568fd6c7d7df3759883fb3db90f4b *R/pileupDouble.R
-ae9a9e222441eb04d788e97792c287a8 *R/pipelineChipSeq.R
+0671bfb64b03ff1ef668026f8cae3d6c *R/pipelineChipSeq.R
 f6a43e4d7f4d57376adb57b6739decd7 *R/plotReadsRepartitionAnnotations.R
 b41e52cf1625477dc685f3b180823054 *R/readAlignedBAM_minimalSEQ.R
 c37debf35febd542d0f19ddac8da7a73 *R/test_functional.R
@@ -20,7 +20,7 @@ d9bee72d6518858932888cdba318f411 *R/test_functional_multiread.R
 106e5e944f06d68dbbaf67e728247304 *build/vignette.rds
 efac075dce78d8cdd5b46300083f77a2 *inst/doc/Pasha.R
 1c9af25d66486eae80e20d4d8adf7a45 *inst/doc/Pasha.Rnw
-4f81585e1138fb3ec6d0b66c48d2efdb *inst/doc/Pasha.pdf
+e4ff109a53b5c0c87e93f8f33e47f328 *inst/doc/Pasha.pdf
 887150c8e7a9922d50fa78a1cfd6af7d *inst/extdata/embedDataTest.bam
 d6201f589d810b79abea4e60acc1d67a *inst/extdata/embedDataTest.bam.bai
 3ef1cc06ae36a289af54d2ae18e0f4f1 *inst/extdata/embedDataTest.sam
@@ -60,7 +60,7 @@ f60f4e7274e54ab7da2dd11c84e47b49 *src/AlignedTag.cpp
 c7e9f5526520588bd92f21543b44b029 *src/MultireadArtifactRemover.cpp
 52fc358b3eace6c081b1201ba0ed36c0 *src/MultireadArtifactRemover.h
 4ff4815dea73e829a8f9ea6f1ecd5ac4 *src/MultireadArtifactRemoverMain.cpp
-381c6f0c4a3a3756c0d3494bfb2d248a *src/MultireadCSEMBcTree.h
+33df61c18da3df4adf9d23da022c578f *src/MultireadCSEMBcTree.h
 0a69649a412fbace200b0c530e1effdd *src/MultireadCSEMDispatcherMain.cpp
 7943e3fb95b01ae6c24584592b0561dd *src/MultireadCSEMPosPair.h
 7ba2502a6faf2fe489209c385023dbd4 *src/MultireadDispatcher.cpp
@@ -79,5 +79,5 @@ e2f1008085f605806b26de6fc3ce7f87 *src/WigRepeatAnalyzer.cpp
 484e877ab0a6f73078d6c2b67139bf94 *src/pileupDouble.c
 98a7feb0b512e9a89aab0f55d874a5bb *src/regex.h
 474535c6d68ba253d1eb66b92a688b45 *tests/test_Pasha.R
-54538919ed954dec9ed58a76deaf300c *tests/test_Pasha.Rout.save
+31220bcea5e59616c9ef622bacbfc215 *tests/test_Pasha.Rout.save
 1c9af25d66486eae80e20d4d8adf7a45 *vignettes/Pasha.Rnw
