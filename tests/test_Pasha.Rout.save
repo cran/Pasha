@@ -1,6 +1,6 @@
 
-R Under development (unstable) (2015-10-14 r69514) -- "Unsuffered Consequences"
-Copyright (C) 2015 The R Foundation for Statistical Computing
+R Under development (unstable) (2016-03-15 r70334) -- "Unsuffered Consequences"
+Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -36,14 +36,21 @@ The following objects are masked from 'package:stats':
 The following objects are masked from 'package:base':
 
     Filter, Find, Map, Position, Reduce, anyDuplicated, append,
-    as.data.frame, as.vector, cbind, colnames, do.call, duplicated,
-    eval, evalq, get, grep, grepl, intersect, is.unsorted, lapply,
-    lengths, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-    pmin.int, rank, rbind, rownames, sapply, setdiff, sort, table,
-    tapply, union, unique, unlist, unsplit
+    as.data.frame, cbind, colnames, do.call, duplicated, eval, evalq,
+    get, grep, grepl, intersect, is.unsorted, lapply, lengths, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int, rank,
+    rbind, rownames, sapply, setdiff, sort, table, tapply, union,
+    unique, unsplit
 
 Loading required package: S4Vectors
 Loading required package: stats4
+
+Attaching package: 'S4Vectors'
+
+The following objects are masked from 'package:base':
+
+    colMeans, colSums, expand.grid, rowMeans, rowSums
+
 Loading required package: IRanges
 Loading required package: GenomeInfoDb
 Loading required package: GenomicRanges
@@ -340,9 +347,9 @@ Starting the results generation (silent output, see log file for details), this 
 
 Comparing the resulting files with precomputed ones...
 
-Number of results files generated : 16 
+Number of results files generated : 24 
 
-Number of successful comparison (md5sum) with precomputed files : 16/16
+Number of successful comparison (md5sum) with precomputed files : 24/24
 
 Done, all results seem consistent with reference
 
@@ -373,4 +380,4 @@ Done, all results seem consistent with reference
 > 
 > proc.time()
    user  system elapsed 
- 22.660   2.677  24.648 
+ 34.790   4.409  38.647 

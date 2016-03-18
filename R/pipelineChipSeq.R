@@ -938,7 +938,7 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
 
 
 
-.writeWIGvs_chr <- function(piledRleData, baseFileName, resultFolder=".")
+.writeWIGvs_chr <- function(piledRleData, baseFileName, resultFolder=".", compatibilityOutputWIG=FALSE)
 {
     
     currentChr <- metadata(piledRleData)[["chr"]]
@@ -950,9 +950,13 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
     
     # Binary mode to avoid conversion of \n for specific platforms
     fileCon <- file(outputFileName, open="wb")
-    
-    trackLine <- paste("track type=wiggle_0 name=\"", baseFileName, "\"", sep="")
-    writeLines(trackLine, con=fileCon, sep="\n")
+
+    # Repeat track line for every chromosome only in compatibility mode (non standard WIG format) 
+    if(compatibilityOutputWIG)
+    {
+        trackLine <- paste("track type=wiggle_0 name=\"", baseFileName, "\"", sep="")
+        writeLines(trackLine, con=fileCon, sep="\n")
+    }
     
     descLine <- paste("variableStep chrom=", currentChr, sep="")
     writeLines(descLine, con=fileCon, sep="\n")
@@ -962,15 +966,50 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
     # Modify the rle to coordinates by summing it and adjust to make it fit (+1)
     startCoord <- diffinv(runLength(piledRleData))+1
     startCoord <- format(startCoord[1:(length(startCoord)-1)], scientific=FALSE, trim=TRUE)
-    score <- format(runValue(piledRleData), scientific=FALSE, trim=TRUE) # As opposed to binned, it's integers, no need to drop trailing 0's which is time consuming
+    score <- format(runValue(piledRleData), scientific=FALSE, digits=10, trim=TRUE, drop0trailing = TRUE)
     
     # Writing to file
     writeLines(paste(startCoord, score, sep=" "), con=fileCon, sep="\n")
     
     close(fileCon)
     
+    
     resultingFiles <- outputFileName
     
+    return(resultingFiles)
+    
+}
+
+
+.writeBED_chr <- function(piledRleData, baseFileName, resultFolder=".")
+{
+    
+    currentChr <- metadata(piledRleData)[["chr"]]
+    
+    cat(paste(currentChr, "... ", sep=""))
+    
+    # Creating the file and writing the track descriptions
+    outputFileName <- file.path(resultFolder, paste("TEMP_BED_", baseFileName, ".", currentChr, sep=""))
+    
+    # Binary mode to avoid conversion of \n for specific platforms
+    fileCon <- file(outputFileName, open="wb")
+
+    
+    # Using the RLE to compute the coordinates for variable steps
+    
+    # Modify the rle to coordinates by summing it (BEDgraph coordinates are O-based as opposed to wiggle ones)
+    coordBase <- diffinv(runLength(piledRleData))
+    endCoord <- format(coordBase[2:(length(coordBase))], scientific=FALSE, trim=TRUE)
+    startCoord <- format(coordBase[1:(length(coordBase)-1)], scientific=FALSE, trim=TRUE)
+    score <- format(runValue(piledRleData), scientific=FALSE, digits=10, trim=TRUE, drop0trailing = TRUE)
+    
+    # Writing to file
+    writeLines(paste(currentChr, startCoord, endCoord, score, sep=" "), con=fileCon, sep="\n")
+    
+    close(fileCon)
+    
+    
+    resultingFiles <- outputFileName
     
     return(resultingFiles)
     
@@ -978,7 +1017,7 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
 
 
 
-.writeWIGfs_chr <- function(binnedDataRle, baseFileName, binSize, resultFolder=".")
+.writeWIGfs_chr <- function(binnedDataRle, baseFileName, binSize, resultFolder=".", compatibilityOutputWIG=FALSE)
 {
     
     currentChr <- metadata(binnedDataRle)[["chr"]]
@@ -994,8 +1033,12 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
     # Binary mode to avoid conversion of \n for specific platforms
     fileCon <- file(outputFileName, open <- "wb")
     
-    trackLine <- paste("track type=wiggle_0 name=\"", baseFileName, "\"", sep="")
-    writeLines(trackLine, con=fileCon, sep="\n")
+    # Repeat track line for every chromosome only in compatibility mode (non standard WIG format) 
+    if(compatibilityOutputWIG)
+    {
+        trackLine <- paste("track type=wiggle_0 name=\"", baseFileName, "\"", sep="")
+        writeLines(trackLine, con=fileCon, sep="\n")
+    }
     
     descLine <- paste("fixedStep chrom=", currentChr, " start=", trunc(binSize/2), " step=", binSize, sep="")
     writeLines(descLine, con=fileCon, sep="\n")
@@ -1037,6 +1080,7 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
     writeLines(paste(currentChr, baseFileName, ".", format(coord+trunc(binSize/2), scientific=FALSE, trim=TRUE), format(coord+trunc(binSize/2), scientific=FALSE, trim=TRUE), formattedScores, ".", ".", paste(currentChr,"_",format(1:length(formattedScores), scientific=FALSE, trim=TRUE), sep=""), sep="\t"), con=fileCon, sep="\n")
     
     close(fileCon)
+    
     
     resultingFiles <- outputFileName
     
@@ -1218,6 +1262,7 @@ generatePiled <- function(alignedDataObject, elongationSize, averageReadSize, mi
     # Converting various strand names that can be encountered to the standard factor with appropriate levels
     strand[strand %in% positiveStrand] <- "+"
     strand[strand %in% negativeStrand] <- "-"
+    
     strand <- factor(strand, levels=levels(strand()))
     
     return(ShortRead::AlignedRead(sread=seq, seqnames=as.factor(paste("chr", chr, sep="")), position=position, strand=strand))
@@ -1238,6 +1283,9 @@ processPipeline <- function(
         WIGfs                         = TRUE,
         WIGvs                         = FALSE,
         GFF                           = FALSE,
+        BED                           = FALSE,
+		BIGWIG						  = FALSE,
+        compatibilityOutputWIG        = FALSE,
         # COMPLEX PARAMETERS (ATOMIC OR VECTORS OR LIST OF IT)
         incrArtefactThrEvery          = 7000000,
         binSize                       = 50,
@@ -1259,7 +1307,16 @@ processPipeline <- function(
 {
     
     # Checking main arguments
-    if(!all(c(is.logical(WIGfs),is.logical(WIGvs),is.logical(GFF)))) stop("Arguments WIGfs, WIGvs and GFF must be logical...")
+    if(!all(c(is.logical(WIGfs), is.logical(WIGvs), is.logical(GFF), is.logical(BED), is.logical(BIGWIG), is.logical(compatibilityOutputWIG)))) stop("Arguments 'WIGfs', 'WIGvs', 'GFF', 'BED', 'BIGWIG', and 'compatibilityOutputWIG' must be logical (and not NA)...")
+    
+    if(any(c(is.na(WIGfs),is.na(WIGvs),is.na(GFF),is.na(BED), is.na(BIGWIG), is.na(compatibilityOutputWIG)))) stop("Arguments 'WIGfs', 'WIGvs', 'GFF', 'BED', 'BIGWIG', and 'compatibilityOutputWIG' cannot be NA...")
+    
+    if(compatibilityOutputWIG)
+    {
+        warningMessage <- "Argument 'compatibilityOutputWIG' is used for compatibility with previous versions only and generates non-standard WIG files (repeated track line), please consider changing this argument to FALSE..."
+        cat("\nWARNING :", warningMessage)
+        warning(warningMessage)
+    }
     
     if(!is.character(rehabilitationStep)) stop("Argument rehabilitationStep must be a character vector (empty or a vector of values in 'orphans' and 'orphansFromArtefacts')")
     if(length(rehabilitationStep)>0)
@@ -1428,8 +1485,7 @@ processPipeline <- function(
     
     annotationGenomeFiles <- .checkComplexParam(annotationGenomeFiles, "annotationGenomeFiles", INPUTFilesList, validValuesFct=.validateGenomeFileNames)
     
-    
-    
+
     #pairedEnds=.checkComplexParam(pairedEnds, "pairedEnds", INPUTFilesList, validValuesFct=function(x){return( (is.logical(x)) && (length(x)==1) )})
     #dontSort=.checkComplexParam(dontSort, "dontSort", INPUTFilesList, validValuesFct=function(x){return( (is.logical(x)) && (length(x)==1) )})
     #midPoint=.checkComplexParam(midPoint, "midPoint", INPUTFilesList, validValuesFct=function(x){return( (is.logical(x)) && (length(x)==1) )})
@@ -1539,7 +1595,7 @@ processPipeline <- function(
 #            cat("\n   ",expName,":", replace(multiLocFile, is.na(multiLocFile),"No multiloc file"))
 #        }, names(multiLocFilesList), multiLocFilesList)
     
-    cat("\n\nOutput piled-up format(s)", paste(if(WIGfs) "WIG fixed steps", if(WIGvs) "WIG variable steps", if(GFF) "GFF fixed steps", sep= " - "), sep=" : ")
+    cat("\n\nOutput piled-up format(s)", paste(if(WIGfs) "WIG fixed steps", if(WIGvs) "WIG variable steps", if(GFF) "GFF fixed steps", if(BED) "Bedgraph variable step", sep= " - "), sep=" : ")
     cat("\nNumber of CPUs or Cores to use (if available) :", nbCPUs)
     cat(if(keepTemp) "\nThe temporary output files for each pileup category will be kept" else "\nThe temporary output files for each pileup category will be discarded")
     cat("\nWhen applicable, elongation will be estimated from ", elongationEstimationRange["mini"], "bp to ", elongationEstimationRange["maxi"], "bp, every ", elongationEstimationRange["by"], "bp", sep="")
@@ -1547,8 +1603,7 @@ processPipeline <- function(
     if(length(rehabilitationStep)>0)
     {
         cat("\nRehabilitation module will be loaded with (if applicable) :", paste(rehabilitationStep, collapse=" - "))
-    }
-    else
+    } else
     {
         cat("\nNo rehabilitation for orphan reads")
     }
@@ -1556,8 +1611,7 @@ processPipeline <- function(
     if(nchar(removeChrNamesContaining)>0)
     {
         cat("\nChromosomes filter will remove chromosome names (seqnames) containing :", removeChrNamesContaining)
-    }
-    else
+    } else
     {
         cat("\nNot filtering chromosome by names")
     }
@@ -1565,8 +1619,7 @@ processPipeline <- function(
     if(!is.na(ignoreInsertsOver))
     {
         cat("\nIf applicable paired-end inserts over ",ignoreInsertsOver, "bp will be ignored", sep="")
-    }
-    else
+    } else
     {
         cat("\nNot filtering inserts outliers by size")
     }
@@ -1803,8 +1856,7 @@ processPipeline <- function(
             if(rangeSelection[[expName]]<2) # Should not happensince the paramter is checked to be >1 at the beginning
             {
                 rangeSelection[[expName]] <- IRanges(0,-1)
-            }
-            else
+            } else
             {
                 cat("\n\n Preparing", rangeSelection[[expName]], "equally sized groups of", ifelse(pairedEnds(alignedDataObject),"inserts","reads"))
                 groupValues <- if(pairedEnds(alignedDataObject)) isize(alignedDataObject)[isize(alignedDataObject)>0] else qwidth(alignedDataObject)
@@ -1816,8 +1868,7 @@ processPipeline <- function(
                 {
                     cat("\n A single range contains all the values.")
                     rangeSelection[[expName]] <- IRanges(0,-1)
-                }
-                else
+                } else
                 {
                     starts <- as.numeric(sub("[\\(\\[](.+),.*", "\\1", groupsRanges))
                     ends <- as.numeric(sub("[^,]*,([^]]*)\\]", "\\1", groupsRanges))
@@ -2028,8 +2079,7 @@ processPipeline <- function(
                     if(currentIncrArtefactThrEvery<0) 
                     {
                         thresholdArtefacts <- (-currentIncrArtefactThrEvery)
-                    }
-                    else
+                    } else
                     {
                         thresholdArtefacts <- trunc(nbReads/currentIncrArtefactThrEvery)
                     }
@@ -2199,8 +2249,24 @@ processPipeline <- function(
                             # Get the names from the list object so all chromosomes with no reads won't be considered anymore (NULL results are automatically removed by unlist)
                             elongationEstimations <- unlist(lapply(elongationEstimationList, unname))
                             
+                            # Get the number of each score
+                            elongationCounts <- table(elongationEstimations)
+                            # Identify the elongations that are less than twice the read size (they are considered as suspicious values and will be weighted down for final decision)
+                            smallElongationIndex <- (as.numeric(names(elongationCounts)) < (averageReadSize*2))
+                            # Weight down the counts for small elongation values (they have to be represented twice as much as other scores for being selected)
+                            elongationCounts[smallElongationIndex] <- elongationCounts[smallElongationIndex]/2;
+                            
                             # Get the most represented size among chromosomes
-                            currentElongationSize <- as.numeric(names(which.max(table(elongationEstimations))))
+                            currentElongationSize <- as.numeric(names(which.max(elongationCounts)))
+                            
+                            if(currentElongationSize < (averageReadSize*2))
+                            {
+                                warningMessage <- "Small elongation values (less than twice the reads size) were the most represented among all chromosomes (even after these values were weighted down for selection). This can reflect anomalous fragment size estimation, please consider checking elongation reports for individual chromosomes and eventually specify a manual value..."
+                                # Write warning in imediate log file
+                                cat("\n WARNING :", warningMessage)
+                                # Report warning programatically
+                                warning(warningMessage)
+                            }
                             
                             cat("\n Estimation summary (bp) :\n    ")
                             
@@ -2268,6 +2334,10 @@ processPipeline <- function(
                     }
                     else # elongation/shifting size manually specified
                     {
+                        if(INPUTFilesList[[expName]]$pairedEnds && (currentElongationSize != 0))
+                        {
+                            cat("\n WARNING : a manual elongation size (other than 0) has been specified for a paired-ends dataset. Note that this value will only be used for eventual orphans and multireads (standard piling will use length information carried by pairs)...");
+                        }
                         # Creating a human readable elongation/shifting size
                         elongationName <- paste("Manual elongation/shifting", currentElongationSize, sep=" ")
                     }
@@ -2286,7 +2356,7 @@ processPipeline <- function(
                     # orphansFromArtefacts
                     
                     
-                    if(any(c(WIGvs,WIGfs,GFF)))
+                    if(any(c(WIGvs,WIGfs,GFF, BED, BIGWIG)))
                     {
                         cat("\n\n COMPUTING PILED FILES\n")
                         
@@ -2467,11 +2537,11 @@ processPipeline <- function(
                             baseFileName <- paste(expName, "_", currentPileupCategory, ifelse(INPUTFilesList[[expName]]$midPoint, "_sh", "_el"), ifelse(INPUTFilesList[[expName]]$pairedEnds, "PairsAnd", ""),ifelse(manualElongation, "Manual", "Est"),currentElongationSize,ifelse(!is.na(currentIncrArtefactThrEvery),paste("_AThr",thresholdArtefacts, sep=""),""),ifelse(INPUTFilesList[[expName]]$midPoint, "_MIDPOINT", ""), sep="")
                             
                             # Generation of the WIG variable step which IS NOT dependant of the binSize
-                            if(WIGvs)
+                            if(WIGvs || BIGWIG)
                             {
                                 cat("\n Writing WIG variable steps for chromosome : ")
-                                
-                                returnList[[expName]][["execTime"]][[paste(programProgressName_pileup, "Writing WIGvs chromosomes",sep=" | ")]]=system.time((resultingFiles_WIGvs=mclapply(piledRleData[[currentPileupCategory]], .writeWIGvs_chr, baseFileName, finalResultFolder)))
+
+                                returnList[[expName]][["execTime"]][[paste(programProgressName_pileup, "Writing WIGvs chromosomes",sep=" | ")]]=system.time((resultingFiles_WIGvs=mclapply(piledRleData[[currentPileupCategory]], .writeWIGvs_chr, baseFileName, finalResultFolder, compatibilityOutputWIG)))
                                 gc()
                                 
                                 # Something went wrong in the fork ?
@@ -2483,7 +2553,7 @@ processPipeline <- function(
                                 cat("\n Merging WIG variable step temporary result files")
                                 
                                 # Get the names of wig files for chromosomes
-                                chromosomesFiles <- unname(unlist(resultingFiles_WIGvs))
+                                chromosomesFiles <- mixedsort(unname(unlist(resultingFiles_WIGvs)))
                                 
                                 # Create the merged result File
                                 resultFileName <- file.path(finalResultFolder, paste("WIGvs_", baseFileName, ".wig", sep=""))
@@ -2494,6 +2564,14 @@ processPipeline <- function(
                                     file.remove(resultFileName)
                                 }
                                 
+                                # Write the track line in first line of the result file (chromosomes files will be appended after it, when compatibility mode on this is written by writeWIG function for each chromosome) 
+                                if(!compatibilityOutputWIG)
+                                {
+                                    fileCon <- file(resultFileName, open="wb")
+                                    writeLines(paste("track type=wiggle_0 name=\"", baseFileName, "\"", sep=""), con=fileCon, sep="\n")
+                                    close(fileCon)
+                                }
+                                
                                 # Concatenate the variable step wig file (thanks to rle encoding)
                                 returnList[[expName]][["execTime"]][[paste(programProgressName_pileup, "Appending WIGvs Individual Chromosomes",sep=" | ")]] <- system.time(file.append(resultFileName, chromosomesFiles))
                                 
@@ -2502,6 +2580,66 @@ processPipeline <- function(
                                 # Erase the temporary (chromosomes splitted) WIG files
                                 file.remove(chromosomesFiles)
                                 #                        }
+	
+								if(BIGWIG)
+								{ 
+                                    
+                                    
+                                    # Compute the minimal chromosome length from piled scores in order to generate the seqinfo object required for bigwig conversion
+                                    chromLengths=sapply(lapply(piledRleData[[currentPileupCategory]], runLength), sum);
+                                    seqinfo_object=Seqinfo(seqnames=names(chromLengths), seqlengths=chromLengths, isCircular=rep(FALSE, length(chromLengths)), genome="genome")
+                                    
+									cat("\n Writing BIGWIG file : ")	
+									wigToBigWig(resultFileName, seqinfo_object, gsub("\\.wig$", ".bw", resultFileName));
+									
+									if(!WIGvs)
+									{
+										file.remove(resultFileName);
+									}
+								}
+                            }
+                            
+                            # Generation of the BEDGRAPH which IS NOT dependant of the binSize
+                            if(BED)
+                            {
+                                cat("\n Writing Bedgraph for chromosome : ")
+                                
+                                returnList[[expName]][["execTime"]][[paste(programProgressName_pileup, "Writing Bedgraph chromosomes",sep=" | ")]] <- system.time((resultingFiles_BED <- mclapply(piledRleData[[currentPileupCategory]], .writeBED_chr, baseFileName, finalResultFolder)))
+                                gc()
+                                
+                                # Something went wrong in the fork ?
+                                resultingFiles_BED <- .checkErrorsInFork(resultingFiles_BED)
+                                
+                                cat("Done !\n")
+                                
+                                
+                                cat("\n Merging Bedgraph temporary result files")
+                                
+                                # Get the names of wig files for chromosomes
+                                chromosomesFiles <- mixedsort(unname(unlist(resultingFiles_BED)))
+                                
+                                # Create the merged result File
+                                resultFileName <- file.path(finalResultFolder, paste("BED_", baseFileName, ".bed", sep=""))
+                                
+                                # Clean an eventual previous file with the same name
+                                if(file.exists(resultFileName))
+                                {
+                                    file.remove(resultFileName)
+                                }
+                                
+                                # Write the track line in first line of the result file
+                                fileCon <- file(resultFileName, open="wb")
+                                writeLines(paste("track type=bedGraph name=\"", baseFileName, "\"", sep=""), con=fileCon, sep="\n")
+                                close(fileCon)
+                                
+                                # Concatenate the GFF file (for peak detection with CoCas)
+                                returnList[[expName]][["execTime"]][[paste(programProgressName_pileup, "Appending Bedgraph Individual Chromosomes",sep=" | ")]] <- system.time(file.append(resultFileName, chromosomesFiles))
+                                
+                                #                                if(!keepTemp)
+                                #                                {
+                                # Erase the temporary (chromosomes splitted) GFF files
+                                file.remove(chromosomesFiles)
+                                #                                }
                             }
                             
                             
@@ -2535,7 +2673,9 @@ processPipeline <- function(
                                         metadata(res) <- list("chr"=currentChr)
                                         return(res)
                                     }
-                                    
+									
+									
+									
                                     # We keep Rle data representation for memory saving despite the fact that we will have to convert it for writing
                                     # Moreover we'll be able to use metadata to store the chromosome name
                                     if(currentBinSize>1)
@@ -2562,19 +2702,19 @@ processPipeline <- function(
                                         
                                         cat("\n Writing WIG fixed steps (bins) for chromosome : ")
                                         
-                                        returnList[[expName]][["execTime"]][[paste(programProgressName_binSize, "Writing WIGfs chromosomes",sep=" | ")]] <- system.time((resultingFiles_WIGfs <- mclapply(binnedDataRle, .writeWIGfs_chr, baseFileNameBinned, currentBinSize, finalResultFolder)))
+                                        returnList[[expName]][["execTime"]][[paste(programProgressName_binSize, "Writing WIGfs chromosomes",sep=" | ")]] <- system.time((resultingFiles_WIGfs <- mclapply(binnedDataRle, .writeWIGfs_chr, baseFileNameBinned, currentBinSize, finalResultFolder, compatibilityOutputWIG)))
                                         gc()
                                         
                                         # Something went wrong in the fork ?
                                         resultingFiles_WIGfs <- .checkErrorsInFork(resultingFiles_WIGfs)
-                                        
+
                                         cat("Done !\n")
                                         
                                         
                                         cat("\n Merging WIG fixed step temporary result files")
                                         
-                                        # Get the names of wig files for chromosomes
-                                        chromosomesFiles <- unname(unlist(resultingFiles_WIGfs))
+                                        # Get the names of wig files for individual chromosomes (and sort them by chromosome name)
+                                        chromosomesFiles <- mixedsort(unname(unlist(resultingFiles_WIGfs)))
                                         
                                         # Create the merged result File
                                         resultFileName <- file.path(finalResultFolder, paste("WIGfs_", baseFileNameBinned, ".wig", sep=""))
@@ -2584,6 +2724,15 @@ processPipeline <- function(
                                         {
                                             file.remove(resultFileName)
                                         }
+                                        
+                                        # Write the track line in first line of the result file (chromosomes files will be appended after it, when compatibility mode on this is written by writeWIG function for each chromosome) 
+                                        if(!compatibilityOutputWIG)
+                                        {
+                                            fileCon <- file(resultFileName, open="wb")
+                                            writeLines(paste("track type=wiggle_0 name=\"", baseFileNameBinned, "\"", sep=""), con=fileCon, sep="\n")
+                                            close(fileCon)
+                                        }
+                                        
                                         
                                         # Concatenate the fixed step (currentBinSize) wig files
                                         returnList[[expName]][["execTime"]][[paste(programProgressName_binSize, "Appending WIGfs Individual Chromosomes",sep=" | ")]] <- system.time(file.append(resultFileName, chromosomesFiles))
@@ -2612,7 +2761,7 @@ processPipeline <- function(
                                         cat("\n Merging GFF temporary result files")
                                         
                                         # Get the names of wig files for chromosomes
-                                        chromosomesFiles <- unname(unlist(resultingFiles_GFF))
+                                        chromosomesFiles <- mixedsort(unname(unlist(resultingFiles_GFF)))
                                         
                                         # Create the merged result File
                                         resultFileName <- file.path(finalResultFolder, paste("GFF_", baseFileNameBinned, ".gff", sep=""))
@@ -2632,6 +2781,7 @@ processPipeline <- function(
                                         file.remove(chromosomesFiles)
                                         #                                }
                                     }
+
                                     
                                 } # /WIG FS AND GFF GENERATION
                                 

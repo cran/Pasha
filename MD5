@@ -1,6 +1,6 @@
-814be67e5c247e2ea6e0e11f4765ccbb *DESCRIPTION
-c795dc8ca6ff2887ab424599ad44a21e *NAMESPACE
-a18429026f52165cdb6fdb05d537d8e2 *NEWS
+e7f303c72cc367507e38fe7669fcf528 *DESCRIPTION
+ec7cbc329135b3f5d1b01ff0196e2234 *NAMESPACE
+57baf3631f9785803d33e71dceae21b1 *NEWS
 df1cd24e40714bbfcf60398ee8661e0d *R/Class_AlignedData.R
 c82547ca8b26e4fe59b8f262a8e2de4c *R/WigRepeatAnalyzer.R
 bd3f4c08b3842008a7c33e50b2b54505 *R/binVector.R
@@ -11,16 +11,16 @@ cdb7d46d6276cc866718ec4f2a00197e *R/mergeWigs.R
 869df11366aa15ef930c26934f6b407b *R/multiread_UniformDispatch.R
 6ed6002084e219194214b36ea5e7e438 *R/normAndSubtract.R
 766568fd6c7d7df3759883fb3db90f4b *R/pileupDouble.R
-0671bfb64b03ff1ef668026f8cae3d6c *R/pipelineChipSeq.R
+3dddb78afc8463c04d1a074beaa34b3f *R/pipelineChipSeq.R
 f6a43e4d7f4d57376adb57b6739decd7 *R/plotReadsRepartitionAnnotations.R
 b41e52cf1625477dc685f3b180823054 *R/readAlignedBAM_minimalSEQ.R
-c37debf35febd542d0f19ddac8da7a73 *R/test_functional.R
+60b9b0f7371697a3a9957062b2569fa4 *R/test_functional.R
 d9bee72d6518858932888cdba318f411 *R/test_functional_multiread.R
 9fa7d1722dbb8afe348d49eb837969f1 *R/wigIO.R
 106e5e944f06d68dbbaf67e728247304 *build/vignette.rds
 efac075dce78d8cdd5b46300083f77a2 *inst/doc/Pasha.R
-1c9af25d66486eae80e20d4d8adf7a45 *inst/doc/Pasha.Rnw
-e4ff109a53b5c0c87e93f8f33e47f328 *inst/doc/Pasha.pdf
+ee7e465513026f6247524f51953588b8 *inst/doc/Pasha.Rnw
+36a7fa15a1de3cec7e8e51e4dc4b0f14 *inst/doc/Pasha.pdf
 887150c8e7a9922d50fa78a1cfd6af7d *inst/extdata/embedDataTest.bam
 d6201f589d810b79abea4e60acc1d67a *inst/extdata/embedDataTest.bam.bai
 3ef1cc06ae36a289af54d2ae18e0f4f1 *inst/extdata/embedDataTest.sam
@@ -28,7 +28,7 @@ f197bfcc38e6c20033af609af7422d00 *inst/extdata/embededDataTest_MultiSignal.bow
 8333989901b78e1cf45bd6ec674fa3a2 *inst/extdata/embededDataTest_MultiSignal.txt
 f6a5e9f794b212f25d2393ba09037a35 *inst/extdata/mm9_RepeatMasker_2000l.txt
 3de369e12edf24806a1ef713d23b197e *inst/extdata/resultTests.pdf
-4a58d73341c2d85572a29d19af17b321 *inst/extdata/resultsFromFunctionalTestsWIG.tar.gz
+ccd0396c461e778f6b696c055b82a1b5 *inst/extdata/resultsFromFunctionalTestsWIG.tar.gz
 51504e66019ea67312224f6fc58bf46b *inst/extdata/resultsFromMultireadFunctionalTests.tar.gz
 1a7a8ed0edd8e067a7ac26d93ffec2d2 *inst/resources/ce10.ref
 d70e6c7982948d4ea655f02cf020d268 *inst/resources/dm3.ref
@@ -51,7 +51,7 @@ cf88c14bc1d7a006be26639bd3822aeb *man/multiread_UniformDispatch.Rd
 0901f4ce34da93b005cd54c6971cd360 *man/normAndSubtract.Rd
 887162a8fa89f939f0e7e35ea0c024f4 *man/pileupDouble.Rd
 947adf3637dd37afdbcdfa9ac17d0a79 *man/plotReadsRepartitionAnnotations.Rd
-4d13e93a4223341dbb9577184bde08a7 *man/processPipeline.Rd
+22eb1a9f59048e67938422aec792c01a *man/processPipeline.Rd
 5ce4ec652e424529bf4c02f7fcefa038 *man/testFunctional.Rd
 73eab91d14834f4f05e9ea5b04999936 *man/testMultireadFunctional.Rd
 7dcc269cfa24a5cb39f1cb6329471239 *man/wigIO.Rd
@@ -79,5 +79,5 @@ e2f1008085f605806b26de6fc3ce7f87 *src/WigRepeatAnalyzer.cpp
 484e877ab0a6f73078d6c2b67139bf94 *src/pileupDouble.c
 98a7feb0b512e9a89aab0f55d874a5bb *src/regex.h
 474535c6d68ba253d1eb66b92a688b45 *tests/test_Pasha.R
-31220bcea5e59616c9ef622bacbfc215 *tests/test_Pasha.Rout.save
-1c9af25d66486eae80e20d4d8adf7a45 *vignettes/Pasha.Rnw
+41406f93a0ed95bcbf03738ec4cab8da *tests/test_Pasha.Rout.save
+ee7e465513026f6247524f51953588b8 *vignettes/Pasha.Rnw

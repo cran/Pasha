@@ -14,7 +14,8 @@ import(Biostrings)
 import(GenomicRanges)
 import(Rsamtools)
 import(ShortRead)
-#import(GenomeInfoDb)
+importFrom(rtracklayer, wigToBigWig)
+importFrom(GenomeInfoDb, Seqinfo)
 
 
 # General

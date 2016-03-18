@@ -86,7 +86,7 @@
     cat("\nComparing the resulting files with precomputed ones...")
     
     # Get the filenames of all wigs and gff generated
-    generatedResults_Files <- list.files(path=test_folderOutputGenerated, pattern="wig|gff", full.names=TRUE, recursive=TRUE)
+    generatedResults_Files <- list.files(path=test_folderOutputGenerated, pattern="\\.wig$|\\.gff$|\\.bed$|\\.bw$", full.names=TRUE, recursive=TRUE)
     
     cat("\n\nNumber of results files generated :",length(generatedResults_Files),"\n")
     
@@ -147,13 +147,16 @@
     }
     
     
-    
+    suppressWarnings(
     processPipeline(INPUTFilesList=INPUTFilesList,
             resultSubFolder              = "Results",
             reportFilesSubFolder         = "Reports",
             WIGfs                        = TRUE,
             WIGvs                        = TRUE,
             GFF                          = FALSE, # GFF is not tested since the resulting files are too big to be stored in package
+            BED                          = TRUE,
+			BIGWIG                       = FALSE, # BIGWIG is not tested since the resulting files are too big to be stored in package
+            compatibilityOutputWIG       = FALSE,
             # COMPLEX PARAMETERS (ATOMIC OR VECTORS OR LIST OF IT)
             incrArtefactThrEvery         = if(testType=="complete") c(-2,NA)      else c(-2),
             binSize                      = if(testType=="complete") c(1, 50, 200) else c(200),
@@ -171,7 +174,7 @@
             logTofile                    = NULL,
             eraseLog                     = TRUE,
             # LIST PARAMETERS (one element per expName)
-            multiLocFilesList            = INPUTFilesMultiList) # A list with experiments names and associated filenames to treat
+            multiLocFilesList            = INPUTFilesMultiList)) # A list with experiments names and associated filenames to treat
     
     
 }
